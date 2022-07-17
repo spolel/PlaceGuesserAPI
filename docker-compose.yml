@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask
+    ports:
+      - "5000:5000"
+    command: python -u app.py
+    restart: unless-stopped
