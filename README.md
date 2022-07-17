@@ -1,6 +1,6 @@
 # API for PlaceGuesser
 
-/get_random_place?pop=<greater then this number>&zone=<zones>
+/get_random_place?pop=*greater than this number*&zone=*zones*
 
 zones:
   "europe"
