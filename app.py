@@ -1,22 +1,19 @@
+import os
 from itertools import combinations_with_replacement
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-import pymongo
-from pymongo import MongoClient
+from flask_pymongo import PyMongo
 from bson.json_util import dumps
 
 app = Flask(__name__)
 CORS(app)
 
 
-CONNECTION_STRING = "mongodb+srv://root:Fuflo1297@cluster0.zjfbluk.mongodb.net/?retryWrites=true&w=majority"
+mongo_places = PyMongo(app, uri='mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/places?authSource=admin')
+mongo_stats = PyMongo(app, uri='mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/stats?authSource=admin')
 
-def get_db_col(dbname, colname):
-    client = pymongo.MongoClient(CONNECTION_STRING)
-    db = pymongo.database.Database(client, dbname)
-    col = pymongo.collection.Collection(db, colname)
-
-    return col
+places_db = mongo_places.db
+stats_db = mongo_stats.db
 
 @app.route('/')
 def ping_server():
@@ -24,7 +21,7 @@ def ping_server():
 
 @app.route('/test')
 def test():
-    cities = get_db_col("places","cities500")
+    cities = places_db["cities500"]
 
     cursor = cities.aggregate([
         {"$match": {"population": {"$gte": 18900000}}},
@@ -36,7 +33,7 @@ def test():
 
 @app.route('/get_random_15000')
 def getRandom():
-    cities = get_db_col("places","cities500")
+    cities = places_db["cities500"]
 
     cursor = cities.aggregate([
         {"$match": {"population": {"$gte": 15000}}},
@@ -49,7 +46,7 @@ def getRandom():
 @app.route('/get_random_place')
 def getRandomPlace():
     
-    cities = get_db_col("places","cities500")
+    cities = places_db["cities500"]
 
     population = request.args.get('pop')
     zone = request.args.get('zone')
