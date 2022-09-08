@@ -59,35 +59,38 @@ def generateScore(distance, gamemode):
         else:
             return math.floor(1000 * (1 - ((distance - 50) / 2450)) ** 2)
 
+
 def getDistanceFromLatLonInKm(lat1, lng1, lat2, lng2):
     R = 6371
     dLat = deg2rad(lat2 - lat1)
     dLon = deg2rad(lng2 - lng1)
-    a = math.sin(dLat / 2) * math.sin(dLat / 2) +  math.cos(deg2rad(lat1)) * math.cos(deg2rad(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
+    a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(deg2rad(lat1)) * \
+        math.cos(deg2rad(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     d = R * c
     return math.floor(d)
 
+
 def deg2rad(deg):
     return deg * (math.pi / 180)
 
+
 def getGameMulti(zone, population):
     zoneMultis = {
-      "worldwide": 4,
-      "europe": 0,
-      "africa": 0,
-      "americas": 1,
-      "asia/oceania": 2.5
+        "worldwide": 4,
+        "europe": 0,
+        "africa": 0,
+        "americas": 1,
+        "asia/oceania": 2.5
     }
     popMultis = {
-      "500": 5,
-      "10000": 3,
-      "50000": 2,
-      "100000": 1,
-      "500000": 0
+        "500": 5,
+        "10000": 3,
+        "50000": 2,
+        "100000": 1,
+        "500000": 0
     }
     return 1 + zoneMultis[zone] + popMultis[population]
-
 
 
 @app.route('/')
@@ -158,8 +161,8 @@ def getLeaderboard():
 
     try:
         cursor = leaderboard.aggregate([
-            {"$sort": {"score": -1}},
-            {"$sample": {"size": 100}}
+            { '$sort': {'score': -1}}, 
+            { '$limit': 100 }
         ])
 
         return dumps(list(cursor))
@@ -225,10 +228,11 @@ def saveScoreToLeaderboard():
 
     totalBaseScore = 0
     for path in reqBody["paths"]:
-        totalBaseScore += generateScore(getDistanceFromLatLonInKm(path[0]["lat"],path[0]["lng"],path[1]["lat"],path[1]["lng"]), reqBody["gamemode"])
+        totalBaseScore += generateScore(getDistanceFromLatLonInKm(
+            path[0]["lat"], path[0]["lng"], path[1]["lat"], path[1]["lng"]), reqBody["gamemode"])
 
     reqBody["basescore"] = totalBaseScore
-    multi = getGameMulti(reqBody["gamemode"],reqBody["population"])
+    multi = getGameMulti(reqBody["gamemode"], reqBody["population"])
     reqBody["multi"] = multi
     reqBody["score"] = totalBaseScore * multi
 
